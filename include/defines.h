@@ -3,11 +3,14 @@
 
 #include <SDL3/SDL.h>
 
-#define SQUARE_SIZE 30	//cellsize of snake will be one smaller, leaving one pixel gap
-#define SQUARE_SPEED 10
+#define SQUARE_SIZE 30U	//cellsize of snake will be one smaller, leaving one pixel gap
+#define SQUARE_SPEED 10U
 
-#define BOARD_WIDTH 32
-#define BOARD_HEIGHT 32
+#define BOARD_WIDTH 32U
+#define BOARD_HEIGHT 32U
+
+#define PLAYER_1 0U
+#define PLAYER_2 1U
 
 typedef struct s_segment {
 	void	*prev;	//if prev is null, then head
@@ -30,9 +33,11 @@ typedef struct s_snake {
 typedef struct s_game {
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_Rect square;
-    int screen_w;
-    int screen_h;
+	SDL_Texture* texture;
+    t_segment square;
+    uint32_t screen_w;
+    uint32_t screen_h;
+	uint32_t	*screen;
 	t_snake	snake[2];
 } t_game;
 

@@ -55,7 +55,7 @@
 }
 
 {
-   glibc_dlopen_invalid_read_1
+   glibc_dlopen_invalid_read
    Memcheck:Addr8
    fun:strncmp
    ...

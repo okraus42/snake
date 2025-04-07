@@ -15,7 +15,7 @@ SDL_REPO    := https://github.com/libsdl-org/SDL.git
 SDL_LIB     := $(SDL_DIR)/build/.libs/libSDL3.a
 
 # Sources and objects
-SRCS        := main.c square.c
+SRCS        := main.c snake.c
 OBJS        := $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 DEPS        := $(OBJS:.o=.d)
 
@@ -34,10 +34,12 @@ $(SDL_LIB):
 		echo "Cloning SDL3..."; \
 		git clone $(SDL_REPO) $(SDL_DIR); \
 	fi
-	@echo "Building SDL3..."
-	@mkdir -p $(SDL_DIR)/build
-	@cd $(SDL_DIR)/build && cmake .. -DSDL_STATIC=ON -DSDL_SHARED=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-	@cmake --build $(SDL_DIR)/build --config Release
+	@if [ ! -d "$(SDL_DIR)" ]; then \
+		@echo "Building SDL3..."; \
+		@mkdir -p $(SDL_DIR)/build; \
+		@cd $(SDL_DIR)/build && cmake .. -DSDL_STATIC=ON -DSDL_SHARED=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release; \
+		@cmake --build $(SDL_DIR)/build --config Release; \
+	fi
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
