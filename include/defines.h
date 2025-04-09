@@ -6,6 +6,13 @@
 #define SQUARE_SIZE 30U	//cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 200U
 
+#define UP 1U
+#define DOWN 2U
+#define VERTICAL 3U
+#define LEFT 4U
+#define RIGHT 8U
+#define HORIZONTAL 12U
+
 #define BOARD_WIDTH 32U
 #define BOARD_HEIGHT 32U
 
