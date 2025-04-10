@@ -49,6 +49,8 @@ void handle_input(t_game *game, int *running) {
     }
 }
 
+//render and generate food
+
 void	render_snake(t_game *game)
 {
 	for (uint32_t y = 0U; y < game->screen_h; y++)
