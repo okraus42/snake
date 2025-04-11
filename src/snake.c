@@ -1,6 +1,7 @@
 #include "../include/defines.h"
 #include <stdlib.h>
 #include <strings.h>
+#include <stdio.h> //debug printf
 
 void init_game(t_game *game) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -28,8 +29,8 @@ void init_game(t_game *game) {
 	);
 
 	game->snake[0].dir = RIGHT;
-	game->snake[0].segment[0].x = 300;
-	game->snake[0].segment[0].y = 300;
+	game->snake[0].segment[0].x = 15;
+	game->snake[0].segment[0].y = 15;
 }
 
 void handle_input(t_game *game, int *running) {
@@ -50,6 +51,19 @@ void handle_input(t_game *game, int *running) {
 }
 
 //render and generate food
+//make it nicer with one pixel gaps but connected later
+
+void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
+{
+	for (uint32_t y = game->snake[snake].segment[segment].y * SQUARE_SIZE; y < (game->snake[snake].segment[segment].y * SQUARE_SIZE) + SQUARE_SIZE; y++)
+	{
+		for (uint32_t x = game->snake[snake].segment[segment].x * SQUARE_SIZE; x < (game->snake[snake].segment[segment].x * SQUARE_SIZE) + SQUARE_SIZE; x++)
+		{
+			printf("%u, %u\n", game->snake[snake].segment[segment].y, game->snake[snake].segment[segment].x);
+			game->screen[(y * game->screen_w + x)] |= 0xFF0000FFU; //use snake colour here
+		}
+	}
+}
 
 void	render_snake(t_game *game)
 {
@@ -57,13 +71,10 @@ void	render_snake(t_game *game)
 	{
 		for (uint32_t x = 0U; x < game->screen_w; x++)
 		{
-			if (x > (game->snake[0].segment[0].x * SQUARE_SIZE) && x <= (game->snake[0].segment[0].x * SQUARE_SIZE) + SQUARE_SIZE
-				&& y > (game->snake[0].segment[0].y * SQUARE_SIZE) && y <= (game->snake[0].segment[0].y * SQUARE_SIZE) + SQUARE_SIZE)
-				game->screen[y * game->screen_w + x] = 0xFF0000FFU;
-			else
-				game->screen[y * game->screen_w + x] = 0x0U;
+			game->screen[y * game->screen_w + x] = 0x0U;
 		}
 	}
+	render_snake_segment(game, 0, 0);
 }
 
 void render(t_game *game) {
