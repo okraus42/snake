@@ -24,7 +24,8 @@ void init_game(t_game *game) {
 		game->screen_w,
 		game->screen_h
 	);
-
+	game->offset_y = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
+	game->offset_x = (game->screen_w - BOARD_WIDTH * SQUARE_SIZE) / 2;
 	game->snake[0].dir = RIGHT;
 	game->snake[0].len = 144U;
 	for (uint32_t i = 0U; i < game->snake[0].len; i++)
@@ -88,7 +89,7 @@ void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
 	{
 		for (uint32_t x = start_x; x < end_x; x++)
 		{
-			game->screen[(y * game->screen_w + x)] |= 0xFF0000FFU; //use snake colour here
+			game->screen[((y + game->offset_y) * game->screen_w + x + game->offset_x)] |= 0xFF0000FFU; //use snake colour here
 		}
 	}
 }
@@ -98,6 +99,13 @@ void	clear_screen(t_game *game)
 	for (uint32_t y = 0U; y < game->screen_h; y++)
 	{
 		for (uint32_t x = 0U; x < game->screen_w; x++)
+		{
+			game->screen[y * game->screen_w + x] = 0xFF111111U;
+		}
+	}
+	for (uint32_t y = game->offset_y; y < game->screen_h - game->offset_y; y++)
+	{
+		for (uint32_t x = game->offset_x; x < game->screen_w - game->offset_x; x++)
 		{
 			game->screen[y * game->screen_w + x] = 0x0U;
 		}

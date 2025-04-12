@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 
 #define SQUARE_SIZE 30U	//cellsize of snake will be one smaller, leaving one pixel gap
-#define STARTING_SPEED 200U
+#define STARTING_SPEED 100U
 
 #define UP 1U
 #define DOWN 2U
@@ -43,6 +43,8 @@ typedef struct s_game {
 	SDL_Texture* texture;
     uint32_t screen_w;
     uint32_t screen_h;
+	uint32_t	offset_y;
+	uint32_t	offset_x;
 	uint32_t	*screen;
 	t_snake	snake[2];
 } t_game;
