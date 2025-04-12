@@ -267,8 +267,11 @@ void cleanup(t_game *game) {
 void move_snake(t_game *game)
 {
 	bool	is_coliding = false;
+	printf("len %u dir: %u\n", game->snake[0].len, game->snake[0].dir);
 	for (uint32_t p = 0U; p < PLAYERS; p++)
 	{
+		is_coliding = false;
+		uint8_t	previous_dir = game->snake[p].dir;
 		uint32_t	y = game->snake[p].segment[0].y;
 		uint32_t	x = game->snake[p].segment[0].x;
 		switch (game->snake[p].last_key) {
@@ -304,6 +307,7 @@ void move_snake(t_game *game)
 			if (game->snake[p].segment[i].y == y && game->snake[p].segment[i].x == x)
 			{
 				game->snake[p].len -= 1;
+				game->snake[p].dir = previous_dir;
 				is_coliding = true;
 			}
 		}
