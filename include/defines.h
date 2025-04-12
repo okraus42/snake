@@ -18,6 +18,19 @@
 
 #define PLAYER_1 0U
 #define PLAYER_2 1U
+#define PLAYERS 2U
+
+#define FOODS 4U
+
+#define SNAKE_1 1U
+#define SNAKE_2 2U
+#define FOOD 4U
+
+typedef struct s_food {
+	bool		is_placed;
+	uint32_t	x;
+	uint32_t	y;
+} t_food;
 
 typedef struct s_segment {
 	uint32_t	x;
@@ -25,7 +38,6 @@ typedef struct s_segment {
 } t_segment;
 
 typedef struct s_snake {
-	uint32_t	board[BOARD_HEIGHT][BOARD_WIDTH];
 	t_segment	segment[BOARD_HEIGHT * BOARD_WIDTH];
 	uint32_t	last_key;
 	uint32_t	len;
@@ -38,15 +50,17 @@ typedef struct s_snake {
 } t_snake;
 
 typedef struct s_game {
+	uint8_t	board[BOARD_HEIGHT][BOARD_WIDTH];
     SDL_Window *window;
     SDL_Renderer *renderer;
 	SDL_Texture* texture;
-    uint32_t screen_w;
-    uint32_t screen_h;
+    uint32_t	screen_w;
+    uint32_t	screen_h;
 	uint32_t	offset_y;
 	uint32_t	offset_x;
 	uint32_t	*screen;
-	t_snake	snake[2];
+	t_snake		snake[PLAYERS];
+	t_food		food[FOODS];
 } t_game;
 
 void init_game(t_game *game);

@@ -3,6 +3,60 @@
 #include <strings.h>
 #include <stdio.h> //debug printf
 
+void	place_foods(t_game *game)
+{
+	uint32_t free = 0U;
+
+	for (uint32_t y = 0U; y < BOARD_HEIGHT; y++)
+	{
+		for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
+		{
+			if (game->board[y][x] == 0U)
+				free++;
+		}
+	}
+	for (uint32_t f = 0; f < FOODS; f++)
+	{
+		if (game->food[f].is_placed == false && free != 0U)
+		{
+			uint32_t	p = 0U;
+			uint32_t	r = rand() % free;
+			for (uint32_t y = 0U; y < BOARD_HEIGHT; y++)
+			{
+				for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
+				{
+					if (game->board[y][x] == 0U)
+						p++;
+					if (p == r)
+					{
+						game->food[f].is_placed = true;
+						game->food[f].y = y;
+						game->food[f].x = x;
+					}
+				}
+			}
+		}
+	}
+}
+
+void	fill_board(t_game *game)
+{
+	bzero(game->board, BOARD_HEIGHT * BOARD_WIDTH * sizeof(uint8_t));
+	for (uint32_t p = 0; p < PLAYERS; p++)
+	{
+		for (uint32_t s = 0; s < game->snake[p].len; s++)
+		{
+			game->board[game->snake[p].segment[s].y][game->snake[p].segment[s].x] |= p + 1;
+		}
+	}
+	for (uint32_t f = 0; f < FOODS; f++)
+	{
+		if (game->food[f].is_placed)
+			game->board[game->food[f].y][game->food[f].x] |= FOOD;
+	}
+	//fill with food as well
+}
+
 void init_game(t_game *game) {
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -27,12 +81,14 @@ void init_game(t_game *game) {
 	game->offset_y = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
 	game->offset_x = (game->screen_w - BOARD_WIDTH * SQUARE_SIZE) / 2;
 	game->snake[0].dir = RIGHT;
-	game->snake[0].len = 144U;
+	game->snake[0].len = 4U;
 	for (uint32_t i = 0U; i < game->snake[0].len; i++)
 	{
 		game->snake[0].segment[i].x = 15 - i;
 		game->snake[0].segment[i].y = 15;
 	}
+	fill_board(game);
+	place_foods(game);
 }
 
 void handle_input(t_game *game, int *running) {
@@ -56,6 +112,28 @@ void handle_input(t_game *game, int *running) {
 //hide tail (optional)
 //render and generate food
 //make it nicer with one pixel gaps but connected later
+
+void	render_food(t_game *game)
+{
+	for (uint32_t f = 0U; f < FOODS; f++)
+	{
+		if (game->food[f].is_placed == false)
+			continue ;
+		uint32_t	start_y = game->food[f].y * SQUARE_SIZE + 1;
+		uint32_t	start_x = game->food[f].x * SQUARE_SIZE + 1;
+		uint32_t	end_x = (game->food[f].x * SQUARE_SIZE) + SQUARE_SIZE - 1;
+		uint32_t	end_y = (game->food[f].y * SQUARE_SIZE) + SQUARE_SIZE - 1;
+
+		for (uint32_t y = start_y; y < end_y; y++)
+		{
+			for (uint32_t x = start_x; x < end_x; x++)
+			{
+				if ((y + x) & 1)
+					game->screen[((y + game->offset_y) * game->screen_w + x + game->offset_x)] |= 0xFFFFFFFFU; //use food colour here
+			}
+		}
+	}
+}
 
 void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
 {
@@ -139,6 +217,7 @@ void render(t_game *game) {
     // SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
 	clear_screen(game);
 	render_snake(game, 0U);
+	render_food(game);
 	SDL_UpdateTexture(game->texture, NULL, game->screen, game->screen_w * sizeof(uint32_t));
     SDL_RenderClear(game->renderer); // really needed
 
