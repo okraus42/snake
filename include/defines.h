@@ -20,8 +20,6 @@
 #define PLAYER_2 1U
 
 typedef struct s_segment {
-	void	*prev;	//if prev is null, then head
-	void	*next;	//if next is null then tail
 	uint32_t	x;
 	uint32_t	y;
 } t_segment;
@@ -36,13 +34,13 @@ typedef struct s_snake {
 	uint32_t	colour;
     uint8_t		dir;
 	uint8_t		lives;
+	bool		has_eaten;
 } t_snake;
 
 typedef struct s_game {
     SDL_Window *window;
     SDL_Renderer *renderer;
 	SDL_Texture* texture;
-    t_segment square;
     uint32_t screen_w;
     uint32_t screen_h;
 	uint32_t	*screen;

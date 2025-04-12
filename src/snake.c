@@ -15,10 +15,7 @@ void init_game(t_game *game) {
     game->window = SDL_CreateWindow("snake", game->screen_w, game->screen_h, SDL_WINDOW_FULLSCREEN);
     game->renderer = SDL_CreateRenderer(game->window, NULL);
 
-    // game->square.w = SQUARE_SIZE;
-    // game->square.h = SQUARE_SIZE;
-    game->square.x = 10;
-    game->square.y = 15;
+
 	game->screen = malloc(game->screen_w * game->screen_h * sizeof(uint32_t));
 	game->texture = SDL_CreateTexture(
 		game->renderer,
@@ -29,8 +26,12 @@ void init_game(t_game *game) {
 	);
 
 	game->snake[0].dir = RIGHT;
-	game->snake[0].segment[0].x = 15;
-	game->snake[0].segment[0].y = 15;
+	game->snake[0].len = 144U;
+	for (uint32_t i = 0U; i < game->snake[0].len; i++)
+	{
+		game->snake[0].segment[i].x = 15 - i;
+		game->snake[0].segment[i].y = 15;
+	}
 }
 
 void handle_input(t_game *game, int *running) {
@@ -50,22 +51,49 @@ void handle_input(t_game *game, int *running) {
     }
 }
 
+//render head
+//hide tail (optional)
 //render and generate food
 //make it nicer with one pixel gaps but connected later
 
 void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
 {
-	for (uint32_t y = game->snake[snake].segment[segment].y * SQUARE_SIZE; y < (game->snake[snake].segment[segment].y * SQUARE_SIZE) + SQUARE_SIZE; y++)
+	printf("%u, %u %u %u\n", snake, segment, game->snake[snake].segment[segment].x, game->snake[snake].segment[segment].y);
+	uint32_t	start_y = game->snake[snake].segment[segment].y * SQUARE_SIZE + 1;
+	uint32_t	start_x = game->snake[snake].segment[segment].x * SQUARE_SIZE + 1;
+	uint32_t	end_x = (game->snake[snake].segment[segment].x * SQUARE_SIZE) + SQUARE_SIZE - 1;
+	uint32_t	end_y = (game->snake[snake].segment[segment].y * SQUARE_SIZE) + SQUARE_SIZE - 1;
+
+	if ((segment > 0U
+			&& game->snake[snake].segment[segment - 1].x == game->snake[snake].segment[segment].x - 1)
+		|| (segment < game->snake[snake].len - 1
+			&& game->snake[snake].segment[segment + 1].x == game->snake[snake].segment[segment].x - 1))
+		--start_x;
+	if ((segment > 0U
+			&& game->snake[snake].segment[segment - 1].x == game->snake[snake].segment[segment].x + 1)
+		|| (segment < game->snake[snake].len - 1
+				&& game->snake[snake].segment[segment + 1].x == game->snake[snake].segment[segment].x + 1))
+		++end_x;
+	if ((segment > 0U
+			&& game->snake[snake].segment[segment - 1].y == game->snake[snake].segment[segment].y - 1)
+		|| (segment < game->snake[snake].len - 1
+			&& game->snake[snake].segment[segment + 1].y == game->snake[snake].segment[segment].y - 1))
+		--start_y;
+	if ((segment > 0U
+			&& game->snake[snake].segment[segment - 1].y == game->snake[snake].segment[segment].y + 1)
+		|| (segment < game->snake[snake].len - 1
+				&& game->snake[snake].segment[segment + 1].y == game->snake[snake].segment[segment].y + 1))
+		++end_y;
+	for (uint32_t y = start_y; y < end_y; y++)
 	{
-		for (uint32_t x = game->snake[snake].segment[segment].x * SQUARE_SIZE; x < (game->snake[snake].segment[segment].x * SQUARE_SIZE) + SQUARE_SIZE; x++)
+		for (uint32_t x = start_x; x < end_x; x++)
 		{
-			printf("%u, %u\n", game->snake[snake].segment[segment].y, game->snake[snake].segment[segment].x);
 			game->screen[(y * game->screen_w + x)] |= 0xFF0000FFU; //use snake colour here
 		}
 	}
 }
 
-void	render_snake(t_game *game)
+void	clear_screen(t_game *game)
 {
 	for (uint32_t y = 0U; y < game->screen_h; y++)
 	{
@@ -74,12 +102,35 @@ void	render_snake(t_game *game)
 			game->screen[y * game->screen_w + x] = 0x0U;
 		}
 	}
-	render_snake_segment(game, 0, 0);
 }
+
+void	render_snake(t_game *game, int snake)
+{
+	for (uint32_t i = 0U; i < game->snake[snake].len; i++)
+	{
+		render_snake_segment(game, snake, i);
+	}
+}
+
+void	render_snake_head(t_game *game, int snake)
+{
+	render_snake_segment(game, snake, 0);
+}
+
+// void	hide_snake_tail(t_game *game, int snake)
+// {
+// 	if (game->snake[snake].has_eaten)
+// 		game->snake[snake].has_eaten = false;
+// 	else
+// 	{
+		
+// 	}
+// }
 
 void render(t_game *game) {
     // SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
-	render_snake(game);
+	clear_screen(game);
+	render_snake(game, 0U);
 	SDL_UpdateTexture(game->texture, NULL, game->screen, game->screen_w * sizeof(uint32_t));
     SDL_RenderClear(game->renderer); // really needed
 
@@ -117,6 +168,7 @@ void move_snake(t_game *game)
 {
 	uint32_t	y = game->snake[0].segment[0].y;
 	uint32_t	x = game->snake[0].segment[0].x;
+
 	switch (game->snake[0].last_key) {
 		case SDLK_UP:
 			if (game->snake[0].dir & HORIZONTAL)
@@ -144,6 +196,11 @@ void move_snake(t_game *game)
 		case LEFT: x = (x - 1) & (BOARD_WIDTH - 1); break;
 		case RIGHT: x = (x + 1) & (BOARD_WIDTH - 1); break;
 		default: break;
+	}
+	for (uint32_t i = game->snake[0].len; i > 0U; i--)
+	{
+		game->snake[0].segment[i].y = game->snake[0].segment[i - 1].y;
+		game->snake[0].segment[i].x = game->snake[0].segment[i - 1].x;
 	}
 	game->snake[0].segment[0].y = y;
 	game->snake[0].segment[0].x = x;
