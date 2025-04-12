@@ -54,7 +54,6 @@ void	fill_board(t_game *game)
 		if (game->food[f].is_placed)
 			game->board[game->food[f].y][game->food[f].x] |= FOOD;
 	}
-	//fill with food as well
 }
 
 void init_game(t_game *game) {
@@ -267,7 +266,7 @@ void cleanup(t_game *game) {
 
 void move_snake(t_game *game)
 {
-	
+	bool	is_coliding = false;
 	for (uint32_t p = 0U; p < PLAYERS; p++)
 	{
 		uint32_t	y = game->snake[p].segment[0].y;
@@ -302,6 +301,16 @@ void move_snake(t_game *game)
 		//check new y and x and either move the snake or shorten it
 		for (uint32_t i = game->snake[p].len; i > 0U; i--)
 		{
+			if (game->snake[p].segment[i].y == y && game->snake[p].segment[i].x == x)
+			{
+				game->snake[p].len -= 1;
+				is_coliding = true;
+			}
+		}
+		if (is_coliding)
+			continue ;
+		for (uint32_t i = game->snake[p].len; i > 0U; i--)
+		{
 			game->snake[p].segment[i].y = game->snake[p].segment[i - 1].y;
 			game->snake[p].segment[i].x = game->snake[p].segment[i - 1].x;
 		}
@@ -314,15 +323,20 @@ void move_snake(t_game *game)
 		{
 			if (game->snake[0].segment[0].y == game->food[f].y && game->snake[0].segment[0].x == game->food[f].x)
 			{
+				game->snake[0].segment[game->snake[0].len].y = game->snake[0].segment[game->snake[0].len - 1].y;
+				game->snake[0].segment[game->snake[0].len].x = game->snake[0].segment[game->snake[0].len - 1].x;
 				game->snake[0].len += 1;
 				game->food[f].is_placed = false;
 			}
 			if (game->snake[1].segment[0].y == game->food[f].y && game->snake[1].segment[0].x == game->food[f].x)
 			{
+				game->snake[1].segment[game->snake[1].len].y = game->snake[1].segment[game->snake[1].len - 1].y;
+				game->snake[1].segment[game->snake[1].len].x = game->snake[1].segment[game->snake[1].len - 1].x;
 				game->snake[1].len += 1;
 				game->food[f].is_placed = false;
 			}
 		}
 	}
+	fill_board(game);
 	place_foods(game);
 }
