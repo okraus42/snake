@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 
 #define SQUARE_SIZE 30U	//cellsize of snake will be one smaller, leaving one pixel gap
-#define STARTING_SPEED 100U
+#define STARTING_SPEED 125U
 
 #define UP 1U
 #define DOWN 2U

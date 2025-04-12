@@ -82,10 +82,19 @@ void init_game(t_game *game) {
 	game->offset_x = (game->screen_w - BOARD_WIDTH * SQUARE_SIZE) / 2;
 	game->snake[0].dir = RIGHT;
 	game->snake[0].len = 4U;
+	game->snake[0].colour = 0xFF0000FFU;
 	for (uint32_t i = 0U; i < game->snake[0].len; i++)
 	{
-		game->snake[0].segment[i].x = 15 - i;
-		game->snake[0].segment[i].y = 15;
+		game->snake[0].segment[i].x = 9 - i;
+		game->snake[0].segment[i].y = 16;
+	}
+	game->snake[1].dir = LEFT;
+	game->snake[1].len = 4U;
+	game->snake[1].colour = 0xFFFF0000U;
+	for (uint32_t i = 0U; i < game->snake[1].len; i++)
+	{
+		game->snake[1].segment[i].x = BOARD_WIDTH - 10 + i;
+		game->snake[1].segment[i].y = 16;
 	}
 	fill_board(game);
 	place_foods(game);
@@ -99,10 +108,14 @@ void handle_input(t_game *game, int *running) {
         } else if (e.type == SDL_EVENT_KEY_DOWN) {
             switch (e.key.key) {
                 case SDLK_ESCAPE: *running = 0; break;
-                case SDLK_UP: game->snake[0].last_key = SDLK_UP; break;
-                case SDLK_DOWN: game->snake[0].last_key = SDLK_DOWN; break;
-                case SDLK_LEFT: game->snake[0].last_key = SDLK_LEFT; break;
-                case SDLK_RIGHT: game->snake[0].last_key = SDLK_RIGHT; break;
+                case SDLK_UP: game->snake[0].last_key = UP; break;
+                case SDLK_DOWN: game->snake[0].last_key = DOWN; break;
+                case SDLK_LEFT: game->snake[0].last_key = LEFT; break;
+                case SDLK_RIGHT: game->snake[0].last_key = RIGHT; break;
+				case SDLK_W: game->snake[1].last_key = UP; break;
+                case SDLK_S: game->snake[1].last_key = DOWN; break;
+                case SDLK_A: game->snake[1].last_key = LEFT; break;
+                case SDLK_D: game->snake[1].last_key = RIGHT; break;
             }
         }
     }
@@ -137,7 +150,7 @@ void	render_food(t_game *game)
 
 void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
 {
-	printf("%u, %u %u %u\n", snake, segment, game->snake[snake].segment[segment].x, game->snake[snake].segment[segment].y);
+	// printf("%u, %u %u %u\n", snake, segment, game->snake[snake].segment[segment].x, game->snake[snake].segment[segment].y);
 	uint32_t	start_y = game->snake[snake].segment[segment].y * SQUARE_SIZE + 1;
 	uint32_t	start_x = game->snake[snake].segment[segment].x * SQUARE_SIZE + 1;
 	uint32_t	end_x = (game->snake[snake].segment[segment].x * SQUARE_SIZE) + SQUARE_SIZE - 1;
@@ -167,7 +180,7 @@ void	render_snake_segment(t_game *game, uint32_t snake, uint32_t segment)
 	{
 		for (uint32_t x = start_x; x < end_x; x++)
 		{
-			game->screen[((y + game->offset_y) * game->screen_w + x + game->offset_x)] |= 0xFF0000FFU; //use snake colour here
+			game->screen[((y + game->offset_y) * game->screen_w + x + game->offset_x)] |= game->snake[snake].colour; //use snake colour here
 		}
 	}
 }
@@ -217,6 +230,7 @@ void render(t_game *game) {
     // SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
 	clear_screen(game);
 	render_snake(game, 0U);
+	render_snake(game, 1U);
 	render_food(game);
 	SDL_UpdateTexture(game->texture, NULL, game->screen, game->screen_w * sizeof(uint32_t));
     SDL_RenderClear(game->renderer); // really needed
@@ -246,49 +260,69 @@ void cleanup(t_game *game) {
         SDL_DestroyTexture(game->texture);
     }
 	free(game->screen);
-    
+    printf("Player 0 len: %u\nPlayer 1 len: %u\n", game->snake[0].len, game->snake[1].len);
     // Quit SDL subsystems
     SDL_Quit();
 }
 
 void move_snake(t_game *game)
 {
-	uint32_t	y = game->snake[0].segment[0].y;
-	uint32_t	x = game->snake[0].segment[0].x;
-
-	switch (game->snake[0].last_key) {
-		case SDLK_UP:
-			if (game->snake[0].dir & HORIZONTAL)
-				game->snake[0].dir = UP;
-			break;
-		case SDLK_DOWN:
-			if (game->snake[0].dir & HORIZONTAL)
-				game->snake[0].dir = DOWN;
-			break;
-		case SDLK_LEFT:
-			if (game->snake[0].dir & VERTICAL)
-				game->snake[0].dir = LEFT;
-			break;
-		case SDLK_RIGHT:
-			if (game->snake[0].dir & VERTICAL)
-				game->snake[0].dir = RIGHT;
-			break;
-		default:
-			break;
-	}
-
-	switch (game->snake[0].dir) {
-		case UP: y = (y - 1) & (BOARD_WIDTH - 1); break;
-		case DOWN: y = (y + 1) & (BOARD_WIDTH - 1); break;
-		case LEFT: x = (x - 1) & (BOARD_WIDTH - 1); break;
-		case RIGHT: x = (x + 1) & (BOARD_WIDTH - 1); break;
-		default: break;
-	}
-	for (uint32_t i = game->snake[0].len; i > 0U; i--)
+	
+	for (uint32_t p = 0U; p < PLAYERS; p++)
 	{
-		game->snake[0].segment[i].y = game->snake[0].segment[i - 1].y;
-		game->snake[0].segment[i].x = game->snake[0].segment[i - 1].x;
+		uint32_t	y = game->snake[p].segment[0].y;
+		uint32_t	x = game->snake[p].segment[0].x;
+		switch (game->snake[p].last_key) {
+			case UP:
+				if (game->snake[p].dir & HORIZONTAL)
+					game->snake[p].dir = UP;
+				break;
+			case DOWN:
+				if (game->snake[p].dir & HORIZONTAL)
+					game->snake[p].dir = DOWN;
+				break;
+			case LEFT:
+				if (game->snake[p].dir & VERTICAL)
+					game->snake[p].dir = LEFT;
+				break;
+			case RIGHT:
+				if (game->snake[p].dir & VERTICAL)
+					game->snake[p].dir = RIGHT;
+				break;
+			default:
+				break;
+		}
+		switch (game->snake[p].dir) {
+			case UP: y = (y - 1) & (BOARD_WIDTH - 1); break;
+			case DOWN: y = (y + 1) & (BOARD_WIDTH - 1); break;
+			case LEFT: x = (x - 1) & (BOARD_WIDTH - 1); break;
+			case RIGHT: x = (x + 1) & (BOARD_WIDTH - 1); break;
+			default: break;
+		}
+		//check new y and x and either move the snake or shorten it
+		for (uint32_t i = game->snake[p].len; i > 0U; i--)
+		{
+			game->snake[p].segment[i].y = game->snake[p].segment[i - 1].y;
+			game->snake[p].segment[i].x = game->snake[p].segment[i - 1].x;
+		}
+		game->snake[p].segment[0].y = y;
+		game->snake[p].segment[0].x = x;
 	}
-	game->snake[0].segment[0].y = y;
-	game->snake[0].segment[0].x = x;
+	for (uint32_t f = 0U; f < FOODS; f++)
+	{
+		if (game->food[f].is_placed)
+		{
+			if (game->snake[0].segment[0].y == game->food[f].y && game->snake[0].segment[0].x == game->food[f].x)
+			{
+				game->snake[0].len += 1;
+				game->food[f].is_placed = false;
+			}
+			if (game->snake[1].segment[0].y == game->food[f].y && game->snake[1].segment[0].x == game->food[f].x)
+			{
+				game->snake[1].len += 1;
+				game->food[f].is_placed = false;
+			}
+		}
+	}
+	place_foods(game);
 }
