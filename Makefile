@@ -38,7 +38,7 @@ $(SDL_LIB):
 		echo "Building SDL3..."; \
 		mkdir -p $(SDL_DIR)/build; \
 		cd $(SDL_DIR)/build && cmake .. -DSDL_STATIC=ON -DSDL_SHARED=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release; \
-		cmake --build $(SDL_DIR)/build --config Release; \
+		cmake --build . --config Release; \
 	fi
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
