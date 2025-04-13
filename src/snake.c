@@ -26,12 +26,15 @@ void	place_foods(t_game *game)
 				for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
 				{
 					if (game->board[y][x] == 0U)
-						p++;
-					if (p == r)
 					{
-						game->food[f].is_placed = true;
-						game->food[f].y = y;
-						game->food[f].x = x;
+						p++;
+						if (p == r)
+						{
+							game->food[f].is_placed = true;
+							game->food[f].y = y;
+							game->food[f].x = x;
+							game->board[y][x] |= FOOD;
+						}
 					}
 				}
 			}
@@ -267,7 +270,7 @@ void cleanup(t_game *game) {
 void move_snake(t_game *game)
 {
 	bool	is_coliding = false;
-	printf("len %u dir: %u\n", game->snake[0].len, game->snake[0].dir);
+	// printf("len %u dir: %u\n", game->snake[0].len, game->snake[0].dir);
 	for (uint32_t p = 0U; p < PLAYERS; p++)
 	{
 		is_coliding = false;
@@ -341,6 +344,7 @@ void move_snake(t_game *game)
 			}
 		}
 	}
+	// printf("A: len %u dir: %u\n", game->snake[0].len, game->snake[0].dir);
 	fill_board(game);
 	place_foods(game);
 }
