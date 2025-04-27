@@ -23,7 +23,7 @@
 #define PLAYER_2 1U
 #define PLAYERS 2U
 
-#define FOODS 4U
+#define FOODS 2U
 
 #define SNAKE_1 1U
 #define SNAKE_2 2U
