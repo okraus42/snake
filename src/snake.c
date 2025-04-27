@@ -83,20 +83,20 @@ void init_game(t_game *game) {
 	game->offset_y = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
 	game->offset_x = (game->screen_w - BOARD_WIDTH * SQUARE_SIZE) / 2;
 	game->snake[0].dir = RIGHT;
-	game->snake[0].len = 4U;
+	game->snake[0].len = STARTING_SIZE;
 	game->snake[0].colour = 0xFF0000FFU;
 	for (uint32_t i = 0U; i < game->snake[0].len; i++)
 	{
-		game->snake[0].segment[i].x = 9 - i;
-		game->snake[0].segment[i].y = 16;
+		game->snake[0].segment[i].x = BOARD_WIDTH - 1 - i;
+		game->snake[0].segment[i].y = BOARD_HEIGHT >> 1;
 	}
 	game->snake[1].dir = LEFT;
-	game->snake[1].len = 4U;
+	game->snake[1].len = STARTING_SIZE;
 	game->snake[1].colour = 0xFFFF0000U;
 	for (uint32_t i = 0U; i < game->snake[1].len; i++)
 	{
-		game->snake[1].segment[i].x = BOARD_WIDTH - 10 + i;
-		game->snake[1].segment[i].y = 16;
+		game->snake[1].segment[i].x = i;
+		game->snake[1].segment[i].y = BOARD_HEIGHT >> 1;
 	}
 	fill_board(game);
 	place_foods(game);
@@ -298,10 +298,10 @@ void move_snake(t_game *game)
 				break;
 		}
 		switch (game->snake[p].dir) {
-			case UP: y = (y - 1) & (BOARD_WIDTH - 1); break;
-			case DOWN: y = (y + 1) & (BOARD_WIDTH - 1); break;
-			case LEFT: x = (x - 1) & (BOARD_WIDTH - 1); break;
-			case RIGHT: x = (x + 1) & (BOARD_WIDTH - 1); break;
+			case UP: y = (y - 1 + BOARD_HEIGHT) % BOARD_HEIGHT; break;
+			case DOWN: y = (y + 1) % BOARD_HEIGHT; break;
+			case LEFT: x = (x - 1 + BOARD_WIDTH) % BOARD_WIDTH; break;
+			case RIGHT: x = (x + 1) % BOARD_WIDTH; break;
 			default: break;
 		}
 		//check new y and x and either move the snake or shorten it

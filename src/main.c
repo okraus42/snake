@@ -8,7 +8,7 @@ int main(void)
 
 	init_game(&game);
 	uint32_t current_time = SDL_GetTicks();
-	uint32_t end_time = current_time + 1000U * 60U;
+	uint32_t end_time = current_time + 1000U * GAME_DURATION;
 	while (running && current_time < end_time)
 	{
 		handle_input(&game, &running);
